@@ -12,7 +12,8 @@ class CourseController extends Controller
      */
     public function index()
     {
-        //
+        $courses=Course::all();
+        return response()->json($courses);
     }
 
     /**
@@ -28,15 +29,44 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|string',
+            'course_description' => 'string|max:300',
+            'category_id' => 'required|exists:categories,id',
+            'teacher_id' => 'required|exists:teachers,id',
+            'price' => 'required|numeric',
+            'documents' => 'array',
+            'documents.*' => 'file|mimes:pdf,mp4|max:2048',
+        ]);
+        if ($request->hasFile('documents')) {
+            $documents = [];
+
+            foreach ($request->file('documents') as $file) {
+                $path = $file->store('documents');
+                $documents[] = [
+                    'filename' => $file->getClientOriginalName(),
+                    'path' => $path,
+                ];
+            }
+
+            $validatedData['documents'] = $documents;
+        }
+
+        $course = Course::create($validatedData);
+
+        return response()->json($course, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Course $course)
+    public function show($id)
     {
-        //
+                //chercher course dans la BD avec id
+                $course= Corse::findOrFail($id);
+
+                //retouner la resultat sous format JSON
+                return response()->json($course);
     }
 
     /**
@@ -50,16 +80,28 @@ class CourseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Course $course)
+    public function update(Request $request, $id)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|string',
+            'course_description'=>'string:300',
+            'category_id' => 'required|exists:categories,id',
+            'teacher_id' => 'required|exists:categories,id',
+            'price'=>'required|double',
+            'documents'=>'mimes:pdf,mp4|max:2048',
+        ]);
+        $course=Course::findOrFail($id);
+        $course->update($validatedData);
+        return response()->json($course,201);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Course $course)
+    public function destroy($id)
     {
-        //
+        $course=Course::findOrFail($id);
+        $course->delete();
+        return response()->json(null,204);
     }
 }

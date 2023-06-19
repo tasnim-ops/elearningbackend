@@ -12,7 +12,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categories=Category::all();
+        return response()->json($categories);
     }
 
     /**
@@ -28,15 +29,21 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData=$request->validate([
+            'name_categ'=>'required|string|unique:categories,name_categ',
+        ]);
+        $categorie=Category::create($validatedData);
+        return response()->json($categorie,201);
     }
+
 
     /**
      * Display the specified resource.
      */
-    public function show(Category $category)
+    public function show($id)
     {
-        //
+        $categorie=Category::findOrFail($id);
+        return response()->json($categorie);
     }
 
     /**
@@ -50,16 +57,28 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id)
     {
-        //
+            // Valider les données
+    $validatedData = $request->validated();
+
+    // Chercher l'utilisateur
+    $administrator = Administrator::findOrFail($id);
+
+    // Mettre à jour les données de l'utilisateur
+    $administrator->update($validatedData);
+
+    // Retourner la réponse avec l'utilisateur mis à jour
+    return response()->json($administrator);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy($id)
     {
-        //
+        $categorie=Category::findOrFail($id);
+        $categorie->delete();
+        return responde()->json(null,204);
     }
 }

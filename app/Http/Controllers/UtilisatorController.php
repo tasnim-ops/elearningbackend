@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Utilisator;
 use Illuminate\Http\Request;
-
+use App\Models\Teacher;
+use App\Models\Student;
 class UtilisatorController extends Controller
 {
     /**
@@ -17,15 +17,6 @@ class UtilisatorController extends Controller
         //afficher les données sous format JSON
         return response()->json($utilisators);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -40,7 +31,6 @@ class UtilisatorController extends Controller
             'password' => 'required|string|min:8',
             'photo' => ['image','mimes:jpeg,png,jpg,webp', 'max:2048']
         ]);
-
         //verificationpresence fichier dans la requette
         if($request->hasFile('photo')){
             $photo=$request->file('photo');
@@ -51,13 +41,9 @@ class UtilisatorController extends Controller
             //ajouter le nom de ficher aux données
             $validatedData['photo']=$photoName;
         }
-        // Créer un nouvel utilisateur
         $utilisator = Utilisator::create($validatedData);
-
-        // Retourner la réponse avec le nouvel utilisateur créé
         return response()->json($utilisator, 201);
     }
-
     /**
      * Display the specified resource.
      */
@@ -69,7 +55,6 @@ class UtilisatorController extends Controller
         //retouner la resultat sous format JSON
         return response()->json($utilisator);
     }
-
     /**
      * Show the form for editing the specified resource.
      */

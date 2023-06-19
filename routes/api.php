@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UtilisatorController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\AdministratorController;
+use App\Http\Controllers\ConferenceController;
 
 
 /*
@@ -25,3 +29,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::apiResource('util',UtilisatorController::class);
 Route::apiResource('teacher',TeacherController::class);
 Route::apiResource('student',StudentController::class);
+Route::apiResource('categ',CategoryController::class);
+Route::apiResource('course',CourseController::class);
+Route::apiResource('admin',AdministratorController::class);
+Route::apiResource('conferences',ConferenceController::class);
+Route::get('/conferences/todo', [ConferenceController::class, 'getToDoConferences']);
