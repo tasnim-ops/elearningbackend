@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conference;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ConferenceController extends Controller
 {
@@ -33,14 +34,18 @@ class ConferenceController extends Controller
     {
         // Validation des données
         $validatedData = $request->validate([
-            'title' => 'required|string',
+            'title' => 'string', // Remove the 'required' rule if it's not necessary
             'description' => 'required|string',
             'teacher_id' => 'required|exists:teachers,id',
+            'date' => 'required|date|date_format:Y-m-d',
+            'time' => 'required|date_format:H:i:s',
+            'status' => ['required', Rule::in(['to do', 'done'])],
         ]);
+
         $validatedData = $request->validate([
             'status' => ['required', Rule::in(['to do', 'done'])],
         ]);
-        $conference = Utilisator::create($validatedData);
+        $conference = Conference::create($validatedData);
         return response()->json($conference, 201);
     }
 
@@ -49,8 +54,9 @@ class ConferenceController extends Controller
      */
     public function show($id)
     {
-         $conference= Utilisator::findOrFail($id);
-         return response()->json($confernec);
+        $conference = Conference::findOrFail($id);
+        return response()->json($conference);
+
     }
 
     /**
@@ -74,9 +80,10 @@ class ConferenceController extends Controller
         $validatedData = $request->validate([
             'status' => ['required', Rule::in(['to do', 'done'])],
         ]);
-                $conference= Confernce::findOrFail($id);
-                $confernece->update($validatedData);
-                return response()->json($confernece);
+        $conference = Conference::findOrFail($id);
+        $conference->update($validatedData);
+        return response()->json($conference);
+
     }
 
     /**
@@ -84,7 +91,7 @@ class ConferenceController extends Controller
      */
     public function destroy($id)
     {
-        $conference= Utilisator::findOrFail($id);
+        $conference= Conference::findOrFail($id);
         $conference->delete();
         return response()->json(null,204);
     }
@@ -94,4 +101,6 @@ class ConferenceController extends Controller
         $conferences = Conference::where('status', 'to do')->get();
         return $conferences;
     }
+
+
 }

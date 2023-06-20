@@ -17,6 +17,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('teacher_id'); // Ajoutez cette ligne pour créer la colonne 'teacher_id'
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
+            $table->string('status');
+            $table->date('date');
+            $table->time('time');
             $table->timestamps();
         });
     }
