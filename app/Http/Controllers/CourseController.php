@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use App\Http\Requests\CourseRequest;
 
 class CourseController extends Controller
 {
@@ -12,32 +13,16 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses=Course::all();
+        $courses = Course::all();
         return response()->json($courses);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CourseRequest $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string',
-            'course_description' => 'string|max:300',
-            'category_id' => 'required|exists:categories,id',
-            'teacher_id' => 'required|exists:teachers,id',
-            'price' => 'required|numeric',
-            'documents' => 'array',
-            'documents.*' => 'file|mimes:pdf,mp4|max:2048',
-        ]);
+        $validatedData = $request->validated();
         if ($request->hasFile('documents')) {
             $documents = [];
 
@@ -62,37 +47,22 @@ class CourseController extends Controller
      */
     public function show($id)
     {
-                //chercher course dans la BD avec id
-                $course= Corse::findOrFail($id);
+        // Search for the course in the database with the given ID
+        $course = Course::findOrFail($id);
 
-                //retouner la resultat sous format JSON
-                return response()->json($course);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Course $course)
-    {
-        //
+        // Return the result as JSON
+        return response()->json($course);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(CourseRequest $request, $id)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string',
-            'course_description'=>'string:300',
-            'category_id' => 'required|exists:categories,id',
-            'teacher_id' => 'required|exists:categories,id',
-            'price'=>'required|double',
-            'documents'=>'mimes:pdf,mp4|max:2048',
-        ]);
-        $course=Course::findOrFail($id);
+        $validatedData = $request->validated();
+        $course = Course::findOrFail($id);
         $course->update($validatedData);
-        return response()->json($course,201);
+        return response()->json($course, 201);
     }
 
     /**
@@ -100,8 +70,8 @@ class CourseController extends Controller
      */
     public function destroy($id)
     {
-        $course=Course::findOrFail($id);
+        $course = Course::findOrFail($id);
         $course->delete();
-        return response()->json(null,204);
+        return response()->json(null, 204);
     }
 }

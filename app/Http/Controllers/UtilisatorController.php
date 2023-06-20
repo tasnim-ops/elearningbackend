@@ -1,10 +1,11 @@
 <?php
-
 namespace App\Http\Controllers;
-use App\Models\Utilisator;
+
 use Illuminate\Http\Request;
-use App\Models\Teacher;
-use App\Models\Student;
+use App\Http\Requests\UtilisatorRequest;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Utilisator;
+use Illuminate\Validation\Rule;
 class UtilisatorController extends Controller
 {
     /**
@@ -20,27 +21,33 @@ class UtilisatorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UtilisatorRequest $request)
     {
-         // Validation des données
-         $validatedData = $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'email' => 'required|email|unique:utilisators',
-            'telephone' => 'required|string|unique:utilisators',
-            'password' => 'required|string|min:8',
-            'photo' => ['image','mimes:jpeg,png,jpg,webp', 'max:2048']
+        // Validation des données (à l'exception de l'unicité)
+        $validatedData = $request->validate($request->rules());
+
+        // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', Rule::unique('utilisators', 'email')],
+            'telephone' => ['required', Rule::unique('utilisators', 'telephone')],
         ]);
-        //verificationpresence fichier dans la requette
-        if($request->hasFile('photo')){
-            $photo=$request->file('photo');
-            //renommer lefichier
-            $photoName=time() . '_' . $photo->getClientOriginalName();
-            //deplacer le fichier dans public
-            $photo->move(public_path('photos'),$photoName);
-            //ajouter le nom de ficher aux données
-            $validatedData['photo']=$photoName;
+
+        // Vérification des erreurs de validation
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
+
+        // Vérification de la présence du fichier photo dans la requête
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            // Renommer le fichier
+            $photoName = time() . '_' . $photo->getClientOriginalName();
+            // Déplacer le fichier dans le dossier public
+            $photo->move(public_path('photos'), $photoName);
+            // Ajouter le nom du fichier aux données validées
+            $validatedData['photo'] = $photoName;
+        }
+
         $utilisator = Utilisator::create($validatedData);
         return response()->json($utilisator, 201);
     }
@@ -55,36 +62,23 @@ class UtilisatorController extends Controller
         //retouner la resultat sous format JSON
         return response()->json($utilisator);
     }
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Utilisator $utilisator)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UtilisatorRequest $request, $id)
     {
-        // Validation des données
-        $validatedData = $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'email' => 'required|email',
-            'telephone' => 'required|string',
-            'password' => 'required|string|min:8',
-            'photo' => ['image','mimes:jpeg,png,jpg,webp', 'max:2048']
-        ]);
-        //chercher l utilisateur
-        $utilisator= Utilisator::findOrFail($id);
+            // Récupérer l'utilisateur existant
+            $utilisator = Utilisator::findOrFail($id);
 
-        // Mettre à jour les données de l'utilisateur
-        $utilisator->update($validatedData);
+            // Valider les données de la requête
+            $validatedData = $request->validated();
 
-        // Retourner la réponse avec l'utilisateur mis à jour
-        return response()->json($utilisator);
+            // Mettre à jour les données de l'utilisateur
+            $utilisator->update($validatedData);
+
+            // Retourner la réponse avec l'utilisateur mis à jour
+            return response()->json($utilisator);
     }
 
     /**

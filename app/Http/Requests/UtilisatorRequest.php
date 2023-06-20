@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -24,10 +23,10 @@ class UtilisatorRequest extends FormRequest
         return [
             'firstname' => 'required|string',
             'lastname' => 'required|string',
-            'email' => 'required|email|unique:utilisators,email',
-            'telephone' => 'required|string|unique:utilisators,telephone',
+            'email' => 'required|email',
+            'telephone' => 'required|string',
             'password' => 'required|string|min:8',
-            'photo' => ['image','mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ];
     }
 

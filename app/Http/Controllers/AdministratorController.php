@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Validation\Rule;
 use App\Models\Administrator;
 use Illuminate\Http\Request;
 use App\Http\Requests\AdministratorRequest;
+use Illuminate\Support\Facades\Validator;
+
 class AdministratorController extends Controller
 {
     /**
@@ -23,26 +25,33 @@ class AdministratorController extends Controller
      */
     public function store(AdministratorRequest $request)
     {
+         // Validation des données (à l'exception de l'unicité)
+         $validatedData = $request->validate($request->rules());
 
+         // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
+         $validator = Validator::make($request->all(), [
+             'email' => ['required', 'email', Rule::unique('administrators', 'email')],
+             'telephone' => ['required', Rule::unique('administrators', 'telephone')],
+         ]);
         // Validation des données
-    $validatedData = $request->validated();
+        $validatedData = $request->validated();
 
-    // Vérification de la présence du fichier photo dans la requête
-    if ($request->hasFile('photo')) {
-        $photo = $request->file('photo');
-        // Renommer le fichier
-        $photoName = time() . '_' . $photo->getClientOriginalName();
-        // Déplacer le fichier dans le dossier public
-        $photo->move(public_path('photos'), $photoName);
-        // Ajouter le nom du fichier aux données validées
-        $validatedData['photo'] = $photoName;
-    }
+        // Vérification de la présence du fichier photo dans la requête
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            // Renommer le fichier
+            $photoName = time() . '_' . $photo->getClientOriginalName();
+            // Déplacer le fichier dans le dossier public
+            $photo->move(public_path('photos'), $photoName);
+            // Ajouter le nom du fichier aux données validées
+            $validatedData['photo'] = $photoName;
+        }
 
-    // Créer un nouvel administrateur en utilisant le tableau $validatedData
-    $administrator = Administrator::create($validatedData);
+        // Créer un nouvel administrateur en utilisant le tableau $validatedData
+        $administrator = Administrator::create($validatedData);
 
-    // Retourner la réponse avec le nouvel administrateur créé
-    return response()->json($administrator, 201);
+        // Retourner la réponse avec le nouvel administrateur créé
+        return response()->json($administrator, 201);
     }
 
     /**
@@ -58,13 +67,7 @@ class AdministratorController extends Controller
 
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Administrator $administrator)
-    {
-        //
-    }
+
 
     /**
      * Update the specified resource in storage.

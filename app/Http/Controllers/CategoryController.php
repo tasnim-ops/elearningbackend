@@ -60,16 +60,19 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
             // Valider les données
-    $validatedData = $request->validated();
+    $validatedData = $request->validate([
+        'name_categ'=>'required|string',
 
-    // Chercher l'utilisateur
-    $administrator = Administrator::findOrFail($id);
+    ]);
 
-    // Mettre à jour les données de l'utilisateur
-    $administrator->update($validatedData);
+    // Chercher la categorie
+    $categorie = Category::findOrFail($id);
 
-    // Retourner la réponse avec l'utilisateur mis à jour
-    return response()->json($administrator);
+    // Mettre à jour les données du categorie
+    $categorie->update($validatedData);
+
+    // Retourner la réponse avec la categorie mis à jour
+    return response()->json($categorie);
     }
 
     /**

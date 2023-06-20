@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use App\Models\Utilisator;
+use App\Http\Requests\UtilisatorRequest;
 
 //import de classe mere
 use App\Http\Controllers\UtilisatorController;
@@ -12,29 +13,29 @@ use App\Http\Controllers\UtilisatorController;
 class TeacherController extends UtilisatorController
 {
 
-    public function store(Request $request)
+    public function store(UtilisatorRequest $request)
     {
-        // Appeler la méthode store() de la classe mère UtilisatorController
-        $utilisatorController = new UtilisatorController();
-        $response = $utilisatorController->store($request);
+          // Appeler la méthode store() de la classe mère UtilisatorController
+    $utilisatorController = new UtilisatorController();
+    $response = $utilisatorController->store($request);
 
-        // Vérifier si la réponse JSON contient des erreurs
-        if ($response->getStatusCode() !== 201) {
-            return $response; // Retourner la réponse d'erreur telle quelle
-        }
+    // Vérifier si la réponse JSON contient des erreurs
+    if ($response->getStatusCode() !== 201) {
+        return $response; // Retourner la réponse d'erreur telle quelle
+    }
 
-        // Obtenir l'objet Utilisator à partir du corps de la réponse JSON
-        $utilisator = $response->getOriginalContent();
+    // Obtenir l'objet Utilisator à partir du corps de la réponse JSON
+    $utilisator = $response->getOriginalContent();
 
-        // Créer un nouvel objet Teacher et l'associer à l'Utilisator créé
-        $teacher = new Teacher();
-        $teacher->utilisator_id = $utilisator->id;
-        $teacher->save();
+    // Créer un nouvel objet Teacher et l'associer à l'Utilisator créé
+    $teacher = new Teacher();
+    $teacher->utilisator_id = $utilisator->id;
+    $teacher->save();
 
-        return response()->json([
-            'utilisator' => $utilisator,
-            'teacher' => $teacher
-        ], 201);
+    return response()->json([
+        'utilisator' => $utilisator,
+        'teacher' => $teacher
+    ], 201);
 
     }
 
@@ -46,8 +47,7 @@ class TeacherController extends UtilisatorController
         // Retourner les enseignants sous format JSON
         return response()->json($teachers);
     }
-
-    public function update(Request $request, $id)
+    public function update(UtilisatorRequest $request, $id)
     {
         // Appeler la méthode parente 'update' de UtilisatorController
         parent::update($request, $id);
@@ -63,6 +63,7 @@ class TeacherController extends UtilisatorController
         // Retourner la réponse avec l'enseignant mis à jour
         return response()->json($teacher);
     }
+
     public function destroy($id)
     {
          // Supprimer l'enseignant de la table 'teachers'
