@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conferences', function (Blueprint $table) {
+        Schema::create('visioconferences', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('teacher_id'); // Ajoutez cette ligne pour créer la colonne 'teacher_id'
+            $table->string('conf_title');
+            $table->text('conf_description')->nullable();
+            $table->unsignedBigInteger('teacher_id');
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
             $table->string('status');
-            $table->date('date');
-            $table->time('time');
+            $table->date('conf_date');
+            $table->time('conf_time');
+
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conferences');
+        Schema::dropIfExists('visioconferences');
     }
 };

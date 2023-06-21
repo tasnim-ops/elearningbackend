@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 use Illuminate\Validation\Rule;
 use App\Models\Administrator;
 use Illuminate\Http\Request;
-use App\Http\Requests\AdministratorRequest;
+use App\Http\Requests\UtilisatorRequest;
+
 use Illuminate\Support\Facades\Validator;
 
 class AdministratorController extends Controller
@@ -23,11 +24,8 @@ class AdministratorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(AdministratorRequest $request)
+    public function store(UtilisatorRequest $request)
     {
-         // Validation des données (à l'exception de l'unicité)
-         $validatedData = $request->validate($request->rules());
-
          // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
          $validator = Validator::make($request->all(), [
              'email' => ['required', 'email', Rule::unique('administrators', 'email')],
@@ -44,11 +42,11 @@ class AdministratorController extends Controller
             // Déplacer le fichier dans le dossier public
             $photo->move(public_path('photos'), $photoName);
             // Ajouter le nom du fichier aux données validées
-            $validatedData['photo'] = $photoName;
+            $request['photo'] = $photoName;
         }
 
-        // Créer un nouvel administrateur en utilisant le tableau $validatedData
-        $administrator = Administrator::create($validatedData);
+        // Créer un nouvel administrateur en utilisant le tableau $request
+        $administrator = Administrator::create($request->validated());
 
         // Retourner la réponse avec le nouvel administrateur créé
         return response()->json($administrator, 201);
@@ -72,7 +70,7 @@ class AdministratorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(AdministratorRequest $request, $id)
+    public function update(UtilisatorRequest $request, $id)
     {
        // Récupérer l'adminà mettre à jour
     $administrator = Administrator::findOrFail($id);

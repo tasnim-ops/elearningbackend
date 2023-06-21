@@ -8,7 +8,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\AdministratorController;
-use App\Http\Controllers\ConferenceController;
+use App\Http\Controllers\VisioconferenceController;
 
 
 /*
@@ -32,5 +32,5 @@ Route::apiResource('student',StudentController::class);
 Route::apiResource('categ',CategoryController::class);
 Route::apiResource('course',CourseController::class);
 Route::apiResource('admin',AdministratorController::class);
-Route::apiResource('conferences',ConferenceController::class);
-Route::get('/conferences/todo', [ConferenceController::class, 'getToDoConferences']);
+Route::apiResource('conferences',VisioconferenceController::class);
+Route::get('/conferences/todo', [VisioconferenceController::class, 'getToDoConferences']);

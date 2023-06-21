@@ -16,13 +16,7 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -44,14 +38,6 @@ class CategoryController extends Controller
     {
         $categorie=Category::findOrFail($id);
         return response()->json($categorie);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
-    {
-        //
     }
 
     /**
@@ -82,6 +68,6 @@ class CategoryController extends Controller
     {
         $categorie=Category::findOrFail($id);
         $categorie->delete();
-        return responde()->json(null,204);
+        return response()->json(null,204);
     }
 }

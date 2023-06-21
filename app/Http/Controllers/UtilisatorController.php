@@ -23,9 +23,6 @@ class UtilisatorController extends Controller
      */
     public function store(UtilisatorRequest $request)
     {
-        // Validation des données (à l'exception de l'unicité)
-        $validatedData = $request->validate($request->rules());
-
         // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email', Rule::unique('utilisators', 'email')],
@@ -45,12 +42,15 @@ class UtilisatorController extends Controller
             // Déplacer le fichier dans le dossier public
             $photo->move(public_path('photos'), $photoName);
             // Ajouter le nom du fichier aux données validées
-            $validatedData['photo'] = $photoName;
+            $request['photo'] = $photoName;
         }
 
-        $utilisator = Utilisator::create($validatedData);
+        // Création de l'instance Utilisator en utilisant les attributs validés
+        //(l'utilisation de validated pour rendre request sous format de tableau)
+        $utilisator = Utilisator::create($request->validated());
         return response()->json($utilisator, 201);
     }
+
     /**
      * Display the specified resource.
      */
