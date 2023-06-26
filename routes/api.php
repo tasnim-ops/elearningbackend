@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\VisioconferenceController;
+use App\Http\Controllers\Api\AuthController;
 
 
 /*
@@ -34,3 +35,10 @@ Route::apiResource('course',CourseController::class);
 Route::apiResource('admin',AdministratorController::class);
 Route::apiResource('conferences',VisioconferenceController::class);
 Route::get('/conferences/todo', [VisioconferenceController::class, 'getToDoConferences']);
+Route::controller(AuthController::class)->group(function () {
+    Route::post('login', 'login');
+    Route::post('register', 'register');
+    Route::post('logout', 'logout');
+    Route::post('refresh', 'refresh');
+
+});
