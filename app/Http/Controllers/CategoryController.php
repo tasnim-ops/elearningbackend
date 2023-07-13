@@ -65,7 +65,7 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name_categ' => 'required|string|unique:categories,name_categ,' . $id,
+            'name_categ' => 'required|string:categories,name_categ,' . $id,
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
@@ -88,6 +88,7 @@ class CategoryController extends Controller
             'name_categ' => $request->input('name_categ'),
             'photo' => $photoUrl,
         ]);
+
 
         return response()->json($category);
     }

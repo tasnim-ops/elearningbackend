@@ -168,8 +168,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
-
     ])->toArray(),
 
     /*
@@ -186,15 +184,5 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
-
-    'middleware' => [
-        // ...
-        \Barryvdh\Cors\HandleCors::class,
-    ],
-
-    'allowed_origins' => [
-        'http://localhost:3000',
-        // Ajoutez d'autres domaines autorisés ici
-    ],
 
 ];

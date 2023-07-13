@@ -1,79 +1,95 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\Teacher;
 use Illuminate\Http\Request;
-use App\Models\Utilisator;
 use App\Http\Requests\UtilisatorRequest;
-
-//import de classe mere
-use App\Http\Controllers\UtilisatorController;
-
-class TeacherController extends UtilisatorController
+use Illuminate\Support\Facades\Validator;
+use App\Models\Teacher;
+use Illuminate\Validation\Rule;
+class TeacherController extends Controller
 {
-
-    public function store(UtilisatorRequest $request)
-    {
-          // Appeler la méthode store() de la classe mère UtilisatorController
-    $utilisatorController = new UtilisatorController();
-    $response = $utilisatorController->store($request);
-
-    // Vérifier si la réponse JSON contient des erreurs
-    if ($response->getStatusCode() !== 201) {
-        return $response; // Retourner la réponse d'erreur telle quelle
-    }
-
-    // Obtenir l'objet Utilisator à partir du corps de la réponse JSON
-    $utilisator = $response->getOriginalContent();
-
-    // Créer un nouvel objet Teacher et l'associer à l'Utilisator créé
-    $teacher = new Teacher();
-    $teacher->utilisator_id = $utilisator->id;
-    $teacher->save();
-
-    return response()->json([
-        'utilisator' => $utilisator,
-        'teacher' => $teacher
-    ], 201);
-
-    }
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        // Filtrer les utilisateurs par type "teacher"
-        $teachers = Teacher::all();
-
-        // Retourner les enseignants sous format JSON
+        //importer les donnéés de la BD
+        $teachers= Teacher::all();
+        //afficher les données sous format JSON
         return response()->json($teachers);
     }
-    public function update(UtilisatorRequest $request, $id)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(UtilisatorRequest $request)
     {
-        // Appeler la méthode parente 'update' de UtilisatorController
-        parent::update($request, $id);
-
-        // Mettre à jour les données spécifiques aux enseignants dans la table 'teachers'
-        $teacher = Teacher::findOrFail($id);
-        // Mettre à jour les champs spécifiques aux enseignants dans la table 'teachers' en utilisant les données de la requête
-        $teacher->update([
-            // Ajoutez ici les champs spécifiques aux enseignants que vous souhaitez mettre à jour
-            // Exemple : 'specialty' => $request->input('specialty'),
+        // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', Rule::unique('teachers', 'email')],
+            'telephone' => ['required', Rule::unique('teachers', 'telephone')],
         ]);
 
-        // Retourner la réponse avec l'enseignant mis à jour
+        // Vérification des erreurs de validation
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Vérification de la présence du fichier photo dans la requête
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            // Renommer le fichier
+            $photoName = time() . '_' . $photo->getClientOriginalName();
+            // Déplacer le fichier dans le dossier public
+            $photo->move(public_path('images'), $photoName);
+            // Ajouter le nom du fichier aux données validées
+            $photoUrl = URL::to('images/' . $photoName);
+        }else {
+            $photoUrl = $teacher->photo;
+        }
+
+        // Création de l'instance Teacher en utilisant les attributs validés
+        //(l'utilisation de validated pour rendre request sous format de tableau)
+        $teacher = Teacher::create($request->validated());
+        return response()->json($teacher, 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        //chercher l Teacher dans la BD avec id
+        $teacher= Teacher::findOrFail($id);
+
+        //retouner la resultat sous format JSON
         return response()->json($teacher);
     }
 
-    public function destroy($id)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UtilisatorRequest $request, $id)
     {
-         // Supprimer l'enseignant de la table 'teachers'
-         Teacher::where('utilisator_id', $id)->delete();
+            // Récupérer l'Teacher existant
+            $teacher = Teacher::findOrFail($id);
 
-         // Appeler la méthode parente 'destroy' de UtilisatorController
-         parent::destroy($id);
+            // Valider les données de la requête
+            $validatedData = $request->validated();
 
-         return response()->json(null, 204);
+            // Mettre à jour les données de l'Teacher
+            $teacher->update($validatedData);
+
+            // Retourner la réponse avec l'Teacher mis à jour
+            return response()->json($teacher);
     }
 
-
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        $teacher= Teacher::findOrFail($id);
+        $teacher->delete();
+        return response()->json(null,204);
+    }
 }
