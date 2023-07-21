@@ -66,7 +66,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name_categ' => 'required|string:categories,name_categ,' . $id,
-            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
         if ($validator->fails()) {

@@ -4,6 +4,11 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
+header('Access-Control-Allow-Origin: http://localhost:3000');
+header("Access-Control-Allow-Credentials: true");
+header('Access-Control-Allow-Methods: GET, PUT, POST, DELETE, OPTIONS');
+header('Access-Control-Max-Age: 1000');
+header('Access-Control-Allow-Headers: Origin, access-control-allow-origin, Content-Type, X-Auth-Token, x-csrf-token, Authorization, access-control-allow-headers');
 
 /*
 |--------------------------------------------------------------------------
