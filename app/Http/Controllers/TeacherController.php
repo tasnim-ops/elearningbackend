@@ -2,11 +2,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Requests\UtilisatorRequest;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Teacher;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\URL;
 class TeacherController extends Controller
+
+
 {
     /**
      * Display a listing of the resource.
@@ -21,17 +23,26 @@ class TeacherController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(UtilisatorRequest $request)
+    public function store(Request $request)
     {
         // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
         $validator = Validator::make($request->all(), [
+            'firstname' => 'required|string',
+            'lastname' => 'required|string',
+            'password' => 'required|string|min:8',
+            'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'email' => ['required', 'email', Rule::unique('teachers', 'email')],
-            'telephone' => ['required', Rule::unique('teachers', 'telephone')],
+            'phone' => ['required', Rule::unique('teachers', 'phone')],
+            'fb' => 'url',
+            'linkedin'=>'url',
+            'github'=>'url',
+            'desc'=> 'string|max:255'
+
         ]);
 
         // Vérification des erreurs de validation
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         // Vérification de la présence du fichier photo dans la requête
@@ -49,7 +60,10 @@ class TeacherController extends Controller
 
         // Création de l'instance Teacher en utilisant les attributs validés
         //(l'utilisation de validated pour rendre request sous format de tableau)
-        $teacher = Teacher::create($request->validated());
+        $teacher = Teacher::create(array_merge($request->all(),[
+            'photo'=> $photoUrl,
+        ]));
+
         return response()->json($teacher, 201);
     }
 
@@ -68,7 +82,7 @@ class TeacherController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UtilisatorRequest $request, $id)
+    public function update(Request $request, $id)
     {
             // Récupérer l'Teacher existant
             $teacher = Teacher::findOrFail($id);

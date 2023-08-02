@@ -10,9 +10,13 @@ class Utilisator extends Model
         'firstname',
         'lastname',
         'email',
-        'telephone',
+        'phone',
         'password',
         'photo',
+        'fb',
+        'linkedin',
+        'github',
+        'desc'
     ];
 
 

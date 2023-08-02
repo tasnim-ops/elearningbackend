@@ -24,9 +24,14 @@ class UtilisatorRequest extends FormRequest
             'firstname' => 'required|string',
             'lastname' => 'required|string',
             'email' => 'required|email',
-            'telephone' => 'required|string',
+            'phone' => 'required|string',
             'password' => 'required|string|min:8',
             'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'fb' => 'url',
+            'linkedin'=>'url',
+            'github'=>'url',
+            'desc'=> 'string|max:255'
+
         ];
     }
 

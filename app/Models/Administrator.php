@@ -12,7 +12,7 @@ class Administrator extends Model
         'firstname',
         'lastname',
         'email',
-        'telephone',
+        'phone',
         'password',
         'photo',
     ];

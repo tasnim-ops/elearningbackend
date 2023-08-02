@@ -16,8 +16,12 @@ return new class extends Migration
             $table->string('firstname');
             $table->string('lastname');
             $table->string('email')->unique();
+            $table->string('fb')->nullable();
+            $table->string('linkedin')->nullable();
+            $table->string('github')->nullable();
+            $table->string('desc')->nullable();
 
-            $table->string('telephone')->unique();
+            $table->string('phone')->unique();
             $table->string('password');
 
             $table->string('photo')->nullable();

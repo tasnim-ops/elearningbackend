@@ -6,6 +6,7 @@ use App\Models\Administrator;
 use Illuminate\Http\Request;
 use App\Http\Requests\UtilisatorRequest;
 
+
 use Illuminate\Support\Facades\Validator;
 
 class AdministratorController extends Controller
@@ -15,9 +16,7 @@ class AdministratorController extends Controller
      */
     public function index()
     {
-         //importer les donnéés de la BD
          $administrators= Administrator::all();
-         //afficher les données sous format JSON
          return response()->json($administrators);
     }
 
@@ -26,15 +25,29 @@ class AdministratorController extends Controller
      */
     public function store(UtilisatorRequest $request)
     {
-         // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
-         $validator = Validator::make($request->all(), [
-             'email' => ['required', 'email', Rule::unique('administrators', 'email')],
-             'telephone' => ['required', Rule::unique('administrators', 'telephone')],
-         ]);
-        // Validation des données
-        $validatedData = $request->validated();
+        $validator = Validator::make($request->all(), [
+            'email' => ['required', 'email', Rule::unique('administrators', 'email')],
+            'phone' => ['required', Rule::unique('administrators', 'phone')],
+            'photo' => ['image', 'nullable'],
+            'firstname' => ['required'],
+            'lastname' => ['required'],
+            'password' => ['required', 'string', 'min:8'], // Add validation for the password field
 
-        // Vérification de la présence du fichier photo dans la requête
+        ]);
+        $messages=[
+            'required' => 'The field is required',
+            'unique' => 'e-mail already exist'
+        ];
+        $validator->setCustomMessages($messages);
+
+        // Check if the validation fails
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // If validation passes, process the request
+        $validatedData = $validator->validated();
+
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
             // Renommer le fichier
@@ -42,25 +55,22 @@ class AdministratorController extends Controller
             // Déplacer le fichier dans le dossier public
             $photo->move(public_path('photos'), $photoName);
             // Ajouter le nom du fichier aux données validées
-            $request['photo'] = $photoName;
+            $validatedData['photo'] = $photoName;
         }
 
-        // Créer un nouvel administrateur en utilisant le tableau $request
-        $administrator = Administrator::create($request->validated());
+        // Créer un nouvel administrateur en utilisant les données validées
+        $administrator = Administrator::create($validatedData);
 
         // Retourner la réponse avec le nouvel administrateur créé
         return response()->json($administrator, 201);
     }
-
     /**
      * Display the specified resource.
      */
     public function show($id)
     {
-         //chercher l utilisateur dans la BD avec id
          $administrator= Administrator::findOrFail($id);
 
-         //retouner la resultat sous format JSON
          return response()->json($administrator);
 
     }
