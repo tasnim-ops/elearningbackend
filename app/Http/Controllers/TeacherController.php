@@ -55,7 +55,7 @@ class TeacherController extends Controller
             // Ajouter le nom du fichier aux données validées
             $photoUrl = URL::to('images/' . $photoName);
         }else {
-            $photoUrl = $teacher->photo;
+            $photoUrl = $request->photo;
         }
 
         // Création de l'instance Teacher en utilisant les attributs validés

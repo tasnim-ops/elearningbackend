@@ -11,6 +11,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\VisioconferenceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\EssaiController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -21,11 +22,15 @@ Route::apiResource('teacher', TeacherController::class);
 Route::apiResource('student', StudentController::class);
 Route::apiResource('categ', CategoryController::class);
 Route::apiResource('course', CourseController::class);
+
+Route::apiResource('essai',EssaiController::class);
+
+
 Route::apiResource('admin', AdministratorController::class)->middleware('utilisator');
 Route::apiResource('conferences', VisioconferenceController::class);
 Route::get('/conferences/todo', [VisioconferenceController::class, 'getToDoConferences']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-//Route::get('/login', [AuthController::class, 'login']);
+Route::get('/login', [AuthController::class, 'login']);
 
 

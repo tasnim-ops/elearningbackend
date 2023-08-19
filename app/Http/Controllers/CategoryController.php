@@ -64,34 +64,29 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name_categ' => 'required|string:categories,name_categ,' . $id,
-            'photo' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-        ]);
+        try {
+            $inputData = $request->all();
+            var_dump($inputData); // Affiche les données reçues
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            $validator = Validator::make($inputData, [
+                'name_categ' => 'required|string|unique:categories,name_categ,' . $id,
+                'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 400);
+            } else {
+                // ... (votre code de mise à jour)
+            }
+        } catch (\Exception $e) {
+            var_dump($e->getMessage()); // Affiche le message d'erreur
+            return response()->json(['status' => 'false', 'message' => $e->getMessage(), 'data' => []], 500);
         }
-
-        $category = Category::findOrFail($id);
-
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $photoName = time() . '_' . $photo->getClientOriginalName();
-            $photo->move(public_path('images'), $photoName);
-            $photoUrl = URL::to('images/' . $photoName);
-        } else {
-            $photoUrl = $category->photo;
-        }
-
-        $category->update([
-            'name_categ' => $request->input('name_categ'),
-            'photo' => $photoUrl,
-        ]);
-
-
-        return response()->json($category);
     }
+
+
+
+
 
     /**
      * Remove the specified resource from storage.
