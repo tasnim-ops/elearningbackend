@@ -13,7 +13,19 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('utilisator_id')->constrained('utilisators');
+            $table->string('firstname');
+            $table->string('lastname');
+            $table->string('email')->unique();
+            $table->string('fb')->nullable();
+            $table->string('linkedin')->nullable();
+            $table->string('github')->nullable();
+            $table->string('desc')->nullable();
+
+            $table->string('phone')->unique();
+            $table->string('password');
+
+            $table->string('photo')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });
     }

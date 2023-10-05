@@ -23,6 +23,9 @@ class Course extends Model
     protected $casts = [
         'documents' => 'json',
     ];
+    //every element can be called with teacher or category function (foreign key)
+    protected $with=['category','teacher'];
+
 
     public function category()
     {
