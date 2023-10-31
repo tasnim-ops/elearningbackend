@@ -12,65 +12,83 @@ use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\StudentController;
 use App\Http\Requests\UtilisatorRequest;
-
+use App\Models\Administrator;
+use App\Models\Teacher;
+use App\Models\Student;
+use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth:sanctum', ['except' => ['login', 'register']]);
     }
+
     public function login(Request $request)
-    {
-        // Validate the request data
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
-            'role' => 'required|string|in:admin,teacher,student',
-        ]);
+{
+    // Validation des données de la demande
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required|string',
+        'role' => 'required|string|in:admin,teacher,student',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
+    }
 
-        // Retrieve authentication data
-        $credentials = $request->only('email', 'password');
+    // Récupérer les données d'authentification
+    $email = $request->input('email');
+    $password = $request->input('password');
+    $role = $request->input('role');
 
-        // Check if user is authenticated
-        $user = User::where('email', $request->input('email'))->first();
-
-        if (!in_array($request->input('role'), ['admin', 'teacher', 'student'])) {
+    // Vérifier si l'utilisateur est authentifié en fonction du rôle
+    $user = null;
+    switch ($role) {
+        case 'admin':
+            $user = Administrator::where('email', $email)->first();
+            break;
+        case 'teacher':
+            $user = Teacher::where('email', $email)->first();
+            break;
+        case 'student':
+            $user = Student::where('email', $email)->first();
+            break;
+        default:
             return response()->json([
                 'message' => 'Invalid role!',
             ], 400);
-        }
-
-        if (!$user || !Hash::check($request->input('password'), $user->password)) {
-            return response()->json([
-                'message' => 'Invalid authentication data',
-            ], 401);
-        }
-
-        // Generate a new access token using Laravel Passport
-        $accessToken = $user->createToken('ApiToken')->accessToken;
-
-        // Get the user's ID
-        $userId = $user->id;
-
-        // Create the response array
-        $response = [
-            'user' => $user,
-            'authorization' => [
-                'token' => $accessToken,
-                'type' => 'bearer',
-                'userId' => $userId,
-            ]
-        ];
-
-        return response()->json($response);
     }
+
+    // Vérifier si l'utilisateur existe et si le mot de passe correspond
+    if (!$user || !Hash::check($password, $user->password)) {
+        return response()->json([
+            'message' => 'Invalid authentication data!',
+        ], 401);
+    }
+
+    // Générer un nouveau jeton d'accès à l'aide de Sanctum
+    $token = $user->createToken('ApiToken');
+
+    // Obtenir l'ID de l'utilisateur
+    $userId = $user->id;
+
+    // Créer le tableau de réponse
+    $response = [
+        'user' => $user,
+        'authorization' => [
+            'token' => $token->plainTextToken,
+            'type' => 'bearer',
+            'userId' => $userId,
+        ]
+    ];
+
+    return response()->json($response);
+}
+
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -96,6 +114,8 @@ class AuthController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
+
+
         $userData = $request->except('role');
 
         $utilisatorRequest = new UtilisatorRequest($userData);
@@ -115,7 +135,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        // Revoke the user's access tokens
+        // Révoquer le jeton actuel
         $user = Auth::user();
         $user->tokens->each(function ($token, $key) {
             $token->delete();
@@ -126,22 +146,26 @@ class AuthController extends Controller
         ]);
     }
 
-    public function refresh()
-    {
-        // Revoke the user's existing tokens and create a new one
-        $user = Auth::user();
-        $user->tokens->each(function ($token, $key) {
-            $token->delete();
-        });
+    public function refresh(Request $request)
+{
+    // Récupérez l'utilisateur authentifié
+    $user = Auth::user();
 
-        $token = $user->createToken('ApiToken')->accessToken;
+    // Révoquez tous les jetons de l'utilisateur
+    $user->tokens->each(function ($token, $key) {
+        $token->delete();
+    });
 
-        return response()->json([
-            'user' => $user,
-            'authorization' => [
-                'token' => $token,
-                'type' => 'bearer',
-            ]
-        ]);
-    }
+    // Créez un nouveau jeton Sanctum
+    $token = $user->createToken('ApiToken')->plainTextToken;
+
+    return response()->json([
+        'user' => $user,
+        'authorization' => [
+            'token' => $token,
+            'type' => 'bearer',
+        ]
+    ]);
+}
+
 }

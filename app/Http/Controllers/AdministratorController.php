@@ -23,7 +23,7 @@ class AdministratorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(UtilisatorRequest $request)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => ['required', 'email', Rule::unique('administrators', 'email')],
@@ -42,7 +42,7 @@ class AdministratorController extends Controller
 
         // Check if the validation fails
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         // If validation passes, process the request
@@ -56,10 +56,19 @@ class AdministratorController extends Controller
             $photo->move(public_path('photos'), $photoName);
             // Ajouter le nom du fichier aux données validées
             $validatedData['photo'] = $photoName;
+        }else{
+            $validatedData['photo']=null;
         }
 
         // Créer un nouvel administrateur en utilisant les données validées
-        $administrator = Administrator::create($validatedData);
+        $administrator = Administrator::create([
+            'firstname'=> $request->input('firstname'),
+            'lastname' => $request->input('lastname'),
+            'password' => bcrypt($request->input('password')),
+            'photo' => $validatedData['photo'],
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+        ]);
 
         // Retourner la réponse avec le nouvel administrateur créé
         return response()->json($administrator, 201);
