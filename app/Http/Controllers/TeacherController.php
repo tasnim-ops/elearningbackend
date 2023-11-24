@@ -1,12 +1,16 @@
 <?php
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Teacher;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 class TeacherController extends Controller
+
 
 
 {
@@ -30,7 +34,7 @@ class TeacherController extends Controller
             'firstname' => 'required|string',
             'lastname' => 'required|string',
             'password' => 'required|string|min:8',
-            'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], 
+            'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'email' => ['required', 'email', Rule::unique('teachers', 'email')],
             'phone' => ['required', Rule::unique('teachers', 'phone')],
             'fb' => 'url',
@@ -90,18 +94,56 @@ class TeacherController extends Controller
      */
     public function update(Request $request, $id)
     {
-            // Récupérer l'Teacher existant
-            $teacher = Teacher::findOrFail($id);
+        // Récupérer l'enseignant existant
+        $teacher = Teacher::findOrFail($id);
 
-            // Valider les données de la requête
-            $validatedData = $request->validated();
+        // Valider les données de la requête
+        $validator = Validator::make($request->all(), [
+            // ... autres règles de validation
+            'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+        ]);
 
-            // Mettre à jour les données de l'Teacher
-            $teacher->update($validatedData);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
 
-            // Retourner la réponse avec l'Teacher mis à jour
-            return response()->json($teacher);
+        // Mettre à jour les données de l'enseignant
+        $teacher->update([
+            // ... autres champs
+            'desc' => $request->input('desc'),
+        ]);
+
+        // Gestion du fichier photo (si présent)
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+
+            // Supprimer l'ancien fichier photo (s'il existe)
+            if ($teacher->photo) {
+                $oldPhotoPath = public_path('images') . '/' . basename($teacher->photo);
+                if (File::exists($oldPhotoPath)) {
+                    File::delete($oldPhotoPath);
+                }
+            }
+
+            if ($photo->isValid()) {
+                // Nommer la nouvelle photo de manière unique
+                $photoName = time() . '_' . $photo->getClientOriginalName();
+
+                // Enregistrer la nouvelle photo dans le dossier public/images
+                $photo->move(public_path('images'), $photoName);
+
+                // Mettre à jour le chemin de la photo dans la base de données
+                $teacher->photo = URL::to('images/' . $photoName);
+            }
+        }
+
+        // Sauvegarder les changements dans la base de données
+        $teacher->save();
+
+        // Retourner la réponse avec l'enseignant mis à jour
+        return response()->json($teacher);
     }
+
 
     /**
      * Remove the specified resource from storage.

@@ -6,7 +6,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\URL;
-
+use Illuminate\Support\Facades\File;
 class CategoryController extends Controller
 {
     /**
@@ -63,64 +63,88 @@ class CategoryController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-    {var_dump($request->name_categ);
-        try {
-            // Récupérer toutes les données de la requête
-            $inputData = $request->all();
 
-            // Valider les données de la requête
-            $validator = Validator::make($inputData, [
-                'name_categ' => 'sometimes|required|string|unique:categories,name_categ,' . $id,
-                'photo' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            ]);
+    {
 
-            // Vérifier si la validation a échoué
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 400);
-            } else {
-                // Trouver la catégorie à mettre à jour
-                $category = Category::find($id);
+        // Récupérer l'Category existant
 
-                // Vérifier si la catégorie existe
-                if (!$category) {
-                    return response()->json(['error' => 'Catégorie non trouvée'], 404);
-                }
+        $category = Category::findOrFail($id);
 
-                // Mettre à jour le champ "name_categ" si présent dans la requête
-                if ($request->has('name_categ')) {
-                    $category->name_categ = $request->input('name_categ');
-                }
 
-                // Mettre à jour le champ "photo" si un nouveau fichier est téléchargé
-                if ($request->hasFile('photo')) {
-                    $photo = $request->file('photo');
-                    if ($photo->getError() !== UPLOAD_ERR_OK) {
-                        return response()->json(['error' => 'Erreur de téléchargement de fichier'], 400);
-                    }
-                    $photoName = time() . '_' . $photo->getClientOriginalName();
-                    $photo->move(public_path('images'), $photoName);
-                    $photoUrl = URL::to('images/' . $photoName);
-                    var_dump('url',$photoUrl);
-                    $category->photo = $photoUrl;
-                }
+        // Validate the data in the request
 
-                // Utiliser la fonction update pour mettre à jour la catégorie
-                $category->update([
-                    'name_categ' => $category->name_categ,
-                    'photo' => $category->photo,
-                ]);
+        $validator = Validator::make($request->all(), [
 
-                // Retourner la catégorie mise à jour en réponse
-                return response()->json($category, 200);
-            }
-        } catch (\Exception $e) {
-            // Afficher le message d'erreur
-            var_dump($e->getMessage());
+            'name_categ' => 'sometimes|string',
 
-            // Gérer les erreurs et retourner une réponse d'erreur
-            return response()->json(['status' => 'false', 'message' => $e->getMessage(), 'data' => []], 500);
+            'photo' => ['sometimes', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+
+        ]);
+
+
+        if ($validator->fails()) {
+
+            //return response()->json(['errors' => $validator->errors()], 400);
+            //return ($id);
+            return($request->photo);
         }
+
+
+        // Update the data of the Category
+
+        if ($request->has('name_categ')) {
+
+            $category->name_categ = $request->input('name_categ');
+
+        }
+
+
+        // Handle the photo if it's present in the request
+
+        if ($request->hasFile('photo')) {
+
+            $photo = $request->file('photo');
+
+
+            // Delete the old photo file (if it exists)
+
+            if ($category->photo) {
+
+                $oldPhotoPath = public_path('images') . '/' . basename($category->photo);
+
+                if (File::exists($oldPhotoPath)) {
+
+                    File::delete($oldPhotoPath);
+
+                }
+
+            }
+
+
+            if ($photo->isValid()) {
+
+                $photoName = time() . '_' . $photo->getClientOriginalName();
+
+                $photo->move(public_path('images'), $photoName);
+
+                $category->photo = URL::to('images/' . $photoName);
+
+            }
+
+        }
+
+
+        $category->save();
+
+
+        // Retourner la réponse avec l'Category mis à jour
+
+        return response()->json($category);
+
     }
+
+
+
 
 
 

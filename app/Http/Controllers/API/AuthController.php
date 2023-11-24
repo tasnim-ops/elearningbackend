@@ -82,7 +82,8 @@ class AuthController extends Controller
             'token' => $token->plainTextToken,
             'type' => 'bearer',
             'userId' => $userId,
-        ]
+        ],
+        'role' =>$role
     ];
 
     return response()->json($response);

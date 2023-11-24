@@ -5,89 +5,36 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UtilisatorRequest;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Utilisator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 class UtilisatorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //importer les donnéés de la BD
-        $utilisators= Utilisator::all();
-        //afficher les données sous format JSON
-        return response()->json($utilisators);
-    }
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(UtilisatorRequest $request)
-    {
-        // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
-        $validator = Validator::make($request->all(), [
-            'email' => ['required', 'email', Rule::unique('utilisators', 'email')],
-            'telephone' => ['required', Rule::unique('utilisators', 'telephone')],
-        ]);
+   // UtilisateurController.php
 
-        // Vérification des erreurs de validation
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+public function editerPhoto(Request $request, $id)
+{
+    // Validez la requête (vérifiez si une nouvelle photo a été envoyée, etc.)
+    $request->validate([
+        'nouvelle_photo' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Exemple de validation pour une image
+    ]);
 
-        // Vérification de la présence du fichier photo dans la requête
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            // Renommer le fichier
-            $photoName = time() . '_' . $photo->getClientOriginalName();
-            // Déplacer le fichier dans le dossier public
-            $photo->move(public_path('photos'), $photoName);
-            // Ajouter le nom du fichier aux données validées
-            $request['photo'] = $photoName;
-        }
+    // Obtenez l'utilisateur à partir de l'ID
+    $utilisateur = Utilisator::findOrFail($id);
 
-        // Création de l'instance Utilisator en utilisant les attributs validés
-        //(l'utilisation de validated pour rendre request sous format de tableau)
-        $utilisator = Utilisator::create($request->validated());
-        return response()->json($utilisator, 201);
+    // Gérez la nouvelle photo
+    if ($request->hasFile('nouvelle_photo')) {
+        // Supprimez l'ancienne photo si elle existe
+        Storage::delete($utilisateur->photo);
+
+        // Enregistrez la nouvelle photo dans le stockage
+        $nouveauChemin = $request->file('nouvelle_photo')->store('chemin/vers/le/stockage');
+
+        // Mettez à jour le chemin de la photo dans la base de données
+        $utilisateur->update(['photo' => $nouveauChemin]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        //chercher l utilisateur dans la BD avec id
-        $utilisator= Utilisator::findOrFail($id);
+    // Retournez une réponse appropriée
+    return response()->json(['message' => 'Photo mise à jour avec succès'], 200);
+}
 
-        //retouner la resultat sous format JSON
-        return response()->json($utilisator);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UtilisatorRequest $request, $id)
-    {
-            // Récupérer l'utilisateur existant
-            $utilisator = Utilisator::findOrFail($id);
-
-            // Valider les données de la requête
-            $validatedData = $request->validated();
-
-            // Mettre à jour les données de l'utilisateur
-            $utilisator->update($validatedData);
-
-            // Retourner la réponse avec l'utilisateur mis à jour
-            return response()->json($utilisator);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        $utilisator= Utilisator::findOrFail($id);
-        $utilisator->delete();
-        return response()->json(null,204);
-    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\VisioconferenceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EssaiController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -41,4 +42,6 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/refresh', [AuthController::class, 'refresh']);
-
+Route::post('/send', [ContactController::class,'sendMessage'])->name('email');
+// Exemple de route pour l'édition de la photo
+Route::put('/utilisateur/{id}/editer-photo', 'UtilisateurController@editerPhoto');
