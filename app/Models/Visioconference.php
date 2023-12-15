@@ -5,15 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Teacher;
+use Laravel\Sanctum\HasApiTokens;
 class Visioconference extends Model
 {
     use HasFactory;
+    use HasApiTokens;
     protected $fillable = [
-        'conf_title','conf_description','teacher_id','status','conf_date',
-        'conf_time',
+        'title','description','teacher_id','conftime','confdate',
+        'participants','duration',
 
     ];
-
+    protected $casts = [
+        'participants' => 'json',
+    ];
+    protected $with=['teacher'];
 
     public function teacher()
     {

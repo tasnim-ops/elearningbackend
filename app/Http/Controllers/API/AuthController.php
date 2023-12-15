@@ -15,6 +15,7 @@ use App\Http\Requests\UtilisatorRequest;
 use App\Models\Administrator;
 use App\Models\Teacher;
 use App\Models\Student;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
@@ -90,49 +91,52 @@ class AuthController extends Controller
 }
 
 
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-            'phone' => 'required|string|max:15|unique:users',
-            'role' => 'required|in:admin,teacher,student',
-        ]);
+public function register(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'firstname' => 'required|string|max:255',
+        'lastname' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6',
+        'phone' => 'required|string|max:15|unique:users',
+        'role' => 'required|in:admin,teacher,student',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $role = $request->input('role');
-        $firstname = $request->input('firstname');
-        $lastname = $request->input('lastname');
-        $phone = $request->input('phone');
-        $email = $request->input('email');
-        $password = $request->input('password');
-
-
-
-        $userData = $request->except('role');
-
-        $utilisatorRequest = new UtilisatorRequest($userData);
-
-        // Process the registration based on the user's role
-        switch ($role) {
-            case 'admin':
-                return app(AdministratorController::class)->store($utilisatorRequest);
-            case 'teacher':
-                return app(TeacherController::class)->store($utilisatorRequest);
-            case 'student':
-                return app(StudentController::class)->store($utilisatorRequest);
-            default:
-                return response()->json(['message' => 'Invalid role!'], 400);
-        }
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $role = $request->input('role');
+    $firstname = $request->input('firstname');
+    $lastname = $request->input('lastname');
+    $phone = $request->input('phone');
+    $email = $request->input('email');
+    $password = $request->input('password');
+
+
+
+    $userData = $request->except('role');
+
+    $utilisatorRequest = new UtilisatorRequest($userData);
+
+    // Process the registration based on the user's role
+    switch ($role) {
+        case 'admin':
+            return app(AdministratorController::class)->store($utilisatorRequest);
+        case 'teacher':
+            return app(TeacherController::class)->store($utilisatorRequest);
+        case 'student':
+            return app(StudentController::class)->store($utilisatorRequest);
+        default:
+            return response()->json(['message' => 'Invalid role!'], 400);
+    }
+}
+
+
+
 
     public function logout()
     {

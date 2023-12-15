@@ -73,7 +73,15 @@ class TeacherController extends Controller
             'desc' => $request->input('desc')
         ]);
 
-        return response()->json($teacher, 201);
+        // Après la création de l'enseignant
+return response()->json([
+    'user' => [
+        'id' => $teacher->id,
+        'email' => $teacher->email,
+        'role' => 'teacher',
+
+],
+], 201);
     }
 
 

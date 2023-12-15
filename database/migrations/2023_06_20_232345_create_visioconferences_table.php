@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('visioconferences', function (Blueprint $table) {
-            $table->id();
-            $table->string('conf_title');
-            $table->text('conf_description')->nullable();
+            $table->string('title');
+            $table->text('description');
             $table->unsignedBigInteger('teacher_id');
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade');
-            $table->string('status');
-            $table->date('conf_date');
-            $table->time('conf_time');
 
+            $table->time('conftime');
+            $table->date('confdate');
+            $table->string('duration');
+            $table->json('participants');
             $table->timestamps();
         });
     }
@@ -32,4 +32,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('visioconferences');
     }
+
 };

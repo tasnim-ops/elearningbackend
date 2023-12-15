@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
 use App\Models\Teacher;
-
+use Laravel\Sanctum\HasApiTokens;
 class Course extends Model
 {
     use HasFactory;

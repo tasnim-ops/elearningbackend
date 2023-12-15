@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('desc')->nullable();
 
             $table->string('phone')->unique();
+
             $table->string('password');
 
             $table->string('photo')->nullable();

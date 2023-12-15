@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('util', UtilisatorController::class);
 Route::apiResource('teacher', TeacherController::class);
+Route::apiResource('/conferences', VisioconferenceController::class);//Route::get('/conferences/todo', [VisioconferenceController::class, 'getToDoConferences']);
+
 /*Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('teacher', TeacherController::class);
 });*/
@@ -36,8 +38,6 @@ Route::apiResource('essai',EssaiController::class);
 
 
 Route::apiResource('admin', AdministratorController::class)->middleware('utilisator');
-Route::apiResource('conferences', VisioconferenceController::class);
-Route::get('/conferences/todo', [VisioconferenceController::class, 'getToDoConferences']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);

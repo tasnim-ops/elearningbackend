@@ -10,5 +10,7 @@ class Teacher extends Utilisator
     use HasFactory;
     use HasApiTokens;
     protected $table = 'teachers';
-
+    public function conference(){
+        return  $this ->hasMany(Visioconference::class);
+    }
 }

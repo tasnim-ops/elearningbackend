@@ -25,7 +25,7 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        // Création d'un validateur pour vérifier l'unicité de l'email et du téléphone
+        // Validation des données
         $validator = Validator::make($request->all(), [
             'firstname' => 'required|string',
             'lastname' => 'required|string',
@@ -34,10 +34,9 @@ class StudentController extends Controller
             'email' => ['required', 'email', Rule::unique('students', 'email')],
             'phone' => ['required', Rule::unique('students', 'phone')],
             'fb' => 'url',
-            'linkedin'=>'url',
-            'github'=>'url',
-            'desc'=> 'string|max:255'
-
+            'linkedin' => 'url',
+            'github' => 'url',
+            'desc' => 'string|max:255'
         ]);
 
         // Vérification des erreurs de validation
@@ -45,26 +44,40 @@ class StudentController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
-        // Vérification de la présence du fichier photo dans la requête
+        // Gestion du fichier photo (si présent)
+        $photoUrl = null;
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
-            // Renommer le fichier
-            $photoName = time() . '_' . $photo->getClientOriginalName();
-            // Déplacer le fichier dans le dossier public
-            $photo->move(public_path('images'), $photoName);
-            // Ajouter le nom du fichier aux données validées
-            $photoUrl = URL::to('images/' . $photoName);
-        }else {
-            $photoUrl = $request->photo;
+            if ($photo->isValid()) {
+                $photoName = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('images'), $photoName);
+                $photoUrl = URL::to('images/' . $photoName);
+            }
         }
 
-        // Création de l'instance Student en utilisant les attributs validés
-        //(l'utilisation de validated pour rendre request sous format de tableau)
-        $student = Student::create(array_merge($request->all(),[
-            'photo'=> $photoUrl,
-        ]));
+        // Création de l'instance  
+        $student = Student::create([
+            'firstname' => $request->input('firstname'),
+            'lastname' => $request->input('lastname'),
+            'password' => bcrypt($request->input('password')),
+            'photo' => $photoUrl,
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'fb' => $request->input('fb'),
+            'linkedin' => $request->input('linkedin'),
+            'github' => $request->input('github'),
+            'desc' => $request->input('desc')
+        ]);
 
-        return response()->json($student, 201);
+
+return response()->json([
+    'user' => [
+        'id' => $student->id,
+        'email' => $student->email,
+        'role' => 'student',
+
+],
+], 201);
     }
 
     /**
