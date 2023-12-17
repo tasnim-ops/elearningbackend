@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Teacher;
 use App\Models\Visioconference;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Mail\Message as IlluminateMailMessage;
 class VisioconferenceController extends Controller
 {
     /**
@@ -48,7 +51,8 @@ class VisioconferenceController extends Controller
             'duration' => $request['duration'],
             'participants' => $request['participants'],
         ]);
-
+        $teacherEmail = Teacher::findOrFail($request['teacher_id'])->email;
+        $this->sendConferenceEmails($visioconference, $teacherEmail);
         return response()->json([$visioconference, 201]);
     }
 
@@ -88,5 +92,22 @@ class VisioconferenceController extends Controller
         $visioconference=Visioconference::findOrFail($id);
         $visioconference->delete();
         return response()->json(null,204);
+    }
+
+    private function sendConferenceEmails($visioconference, $teacherEmail)
+    {
+        $messageContent = "You have a conference titled by : " . $visioconference->title . "\n";
+        $messageContent .= "on : " . $visioconference->confdate . "\n";
+        $messageContent .= "at : " . $visioconference->conftime . "\n";
+        $messageContent .= "Animated by : " . $visioconference->teacher->firstname . " " . $visioconference->teacher->lastname . "\n";
+        $messageContent .= "Duration : " . $visioconference->duration . "\n";
+
+        foreach ($visioconference->participants as $participant) {
+            Mail::raw($messageContent, function ($mail) use ($participant, $teacherEmail) {
+                $mail->to($participant)
+                    ->from($teacherEmail)
+                    ->subject('Conference Details');
+            });
+        }
     }
 }
