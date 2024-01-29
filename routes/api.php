@@ -45,3 +45,6 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::post('/send', [ContactController::class,'sendMessage'])->name('email');
 // Exemple de route pour l'édition de la photo
 Route::put('/utilisateur/{id}/editer-photo', 'UtilisateurController@editerPhoto');
+// routes/api.php
+Route::get('/generate-access-token', [VisioconferenceController::class, 'generateAccessToken']);
+
